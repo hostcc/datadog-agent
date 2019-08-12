@@ -16,7 +16,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -68,8 +67,6 @@ extensions for special Datadog features.`,
 )
 
 const (
-	// run the host metadata collector every 14400 seconds (4 hours)
-	hostMetadataCollectorInterval = 14400
 	// loggerName is the name of the dogstatsd logger
 	loggerName config.LoggerName = "DSD"
 )
@@ -84,6 +81,31 @@ func init() {
 	config.Datadog.BindPFlag("conf_path", startCmd.Flags().Lookup("cfgpath"))
 	startCmd.Flags().StringVarP(&socketPath, "socket", "s", "", "listen to this socket instead of UDP")
 	config.Datadog.BindPFlag("dogstatsd_socket", startCmd.Flags().Lookup("socket"))
+}
+
+// Start the host metadata collector
+func setupMetadataCollection(metaScheduler *metadata.Scheduler) error {
+	var C []config.MetadataProviders
+	if err := config.Datadog.UnmarshalKey("metadata_providers", &C); err == nil {
+		// Look in the configuration if the host metadata provider was
+		// manully set. We don't start other metadata collector for dogstastd
+		for _, c := range C {
+			if c.Name != "host" {
+				log.Debugf("Ignoring '%s' metadata collector. Only 'host' provider is from dogstastd", c.Name)
+				continue
+			}
+
+			return metadata.AddCollector("host", c.Interval, metaScheduler)
+		}
+	} else {
+		log.Errorf("Unable to parse metadata_providers config (using default interval): %v", err)
+	}
+
+	if err := metadata.AddDefaultCollector("host", metaScheduler); err != nil {
+		metaScheduler.Stop()
+		return log.Error("Host metadata is supposed to be always available in the catalog!")
+	}
+	return nil
 }
 
 func start(cmd *cobra.Command, args []string) error {
@@ -173,11 +195,8 @@ func start(cmd *cobra.Command, args []string) error {
 		// start metadata collection
 		metaScheduler = metadata.NewScheduler(s, hname)
 
-		// add the host metadata collector
-		err = metaScheduler.AddCollector("host", hostMetadataCollectorInterval*time.Second)
-		if err != nil {
-			metaScheduler.Stop()
-			return log.Error("Host metadata is supposed to be always available in the catalog!")
+		if err := setupMetadataCollection(metaScheduler); err != nil {
+			return err
 		}
 	} else {
 		log.Warnf("Metadata collection disabled, only do that if another agent/dogstatsd is running on this host")
