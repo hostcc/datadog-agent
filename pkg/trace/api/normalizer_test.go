@@ -59,8 +59,8 @@ func tsDropped(td *info.TracesDropped) *info.TagStats {
 func TestNormalizeOK(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, newTagStats(), ts)
 }
 
@@ -68,8 +68,8 @@ func TestNormalizeServicePassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.Service
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.Service)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -78,8 +78,8 @@ func TestNormalizeEmptyServiceNoLang(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Service = ""
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, DefaultServiceName, s.Service)
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{ServiceEmpty: 1}), ts)
 }
@@ -89,8 +89,8 @@ func TestNormalizeEmptyServiceWithLang(t *testing.T) {
 	s := newTestSpan()
 	s.Service = ""
 	ts.Lang = "java"
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, s.Service, fmt.Sprintf("unnamed-%s-service", ts.Lang))
 	tsExpected := tsMalformed(&info.SpansMalformed{ServiceEmpty: 1})
 	tsExpected.Lang = ts.Lang
@@ -101,8 +101,8 @@ func TestNormalizeLongService(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Service = strings.Repeat("CAMEMBERT", 100)
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, s.Service, s.Service[:MaxServiceLen])
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{ServiceTruncate: 1}), ts)
 }
@@ -111,8 +111,8 @@ func TestNormalizeNamePassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.Name
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.Name)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -121,8 +121,8 @@ func TestNormalizeEmptyName(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Name = ""
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, s.Name, strings.Replace(DefaultSpanName, "-", "_", -1))
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{SpanNameEmpty: 1}), ts)
 }
@@ -131,8 +131,8 @@ func TestNormalizeLongName(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Name = strings.Repeat("CAMEMBERT", 100)
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, s.Name, s.Name[:MaxNameLen])
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{SpanNameTruncate: 1}), ts)
 }
@@ -141,8 +141,8 @@ func TestNormalizeNameNoAlphanumeric(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Name = "/"
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, s.Name, DefaultSpanName)
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{SpanNameInvalid: 1}), ts)
 }
@@ -152,12 +152,12 @@ func TestNormalizeNameForMetrics(t *testing.T) {
 		"pylons.controller": "pylons.controller",
 		"trace-api.request": "trace_api.request",
 	}
-	overridenServiceName := ""
+	overriddenServiceName := ""
 	ts := newTagStats()
 	s := newTestSpan()
 	for name, expName := range expNames {
 		s.Name = name
-		assert.NoError(t, normalize(ts, s, overridenServiceName))
+		assert.NoError(t, normalize(ts, s, overriddenServiceName))
 		assert.Equal(t, expName, s.Name)
 		assert.Equal(t, newTagStats(), ts)
 	}
@@ -167,8 +167,8 @@ func TestNormalizeResourcePassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.Resource
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.Resource)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -177,8 +177,8 @@ func TestNormalizeEmptyResource(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Resource = ""
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, s.Resource, s.Name)
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{ResourceEmpty: 1}), ts)
 }
@@ -187,8 +187,8 @@ func TestNormalizeTraceIDPassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.TraceID
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.TraceID)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -197,8 +197,8 @@ func TestNormalizeNoTraceID(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.TraceID = 0
-	overridenServiceName := ""
-	assert.Error(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.Error(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, tsDropped(&info.TracesDropped{TraceIDZero: 1}), ts)
 }
 
@@ -206,8 +206,8 @@ func TestNormalizeSpanIDPassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.SpanID
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.SpanID)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -216,19 +216,19 @@ func TestNormalizeNoSpanID(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.SpanID = 0
-	overridenServiceName := ""
-	assert.Error(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.Error(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, tsDropped(&info.TracesDropped{SpanIDZero: 1}), ts)
 }
 
 func TestNormalizeStart(t *testing.T) {
 
-	overridenServiceName := ""
+	overriddenServiceName := ""
 	t.Run("pass-through", func(t *testing.T) {
 		ts := newTagStats()
 		s := newTestSpan()
 		before := s.Start
-		assert.NoError(t, normalize(ts, s, overridenServiceName))
+		assert.NoError(t, normalize(ts, s, overriddenServiceName))
 		assert.Equal(t, before, s.Start)
 		assert.Equal(t, newTagStats(), ts)
 	})
@@ -238,7 +238,7 @@ func TestNormalizeStart(t *testing.T) {
 		s := newTestSpan()
 		s.Start = 42
 		minStart := time.Now().UnixNano() - s.Duration
-		assert.NoError(t, normalize(ts, s, overridenServiceName))
+		assert.NoError(t, normalize(ts, s, overriddenServiceName))
 		assert.True(t, s.Start >= minStart)
 		assert.True(t, s.Start <= time.Now().UnixNano()-s.Duration)
 		assert.Equal(t, tsMalformed(&info.SpansMalformed{InvalidStartDate: 1}), ts)
@@ -250,7 +250,7 @@ func TestNormalizeStart(t *testing.T) {
 		s.Start = 42
 		s.Duration = time.Now().UnixNano() * 2
 		minStart := time.Now().UnixNano()
-		assert.NoError(t, normalize(ts, s, overridenServiceName))
+		assert.NoError(t, normalize(ts, s, overriddenServiceName))
 		assert.Equal(t, tsMalformed(&info.SpansMalformed{InvalidStartDate: 1}), ts)
 		assert.True(t, s.Start >= minStart, "start should have been reset to current time")
 		assert.True(t, s.Start <= time.Now().UnixNano(), "start should have been reset to current time")
@@ -261,8 +261,8 @@ func TestNormalizeDurationPassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.Duration
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.Duration)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -271,8 +271,8 @@ func TestNormalizeEmptyDuration(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Duration = 0
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.EqualValues(t, s.Duration, 0)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -281,8 +281,8 @@ func TestNormalizeNegativeDuration(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Duration = -50
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.EqualValues(t, s.Duration, 0)
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{InvalidDuration: 1}), ts)
 }
@@ -291,8 +291,8 @@ func TestNormalizeLargeDuration(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Duration = int64(math.MaxInt64)
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.EqualValues(t, s.Duration, 0)
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{InvalidDuration: 1}), ts)
 }
@@ -301,8 +301,8 @@ func TestNormalizeErrorPassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.Error
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.Error)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -311,8 +311,8 @@ func TestNormalizeMetricsPassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.Metrics
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.Metrics)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -321,8 +321,8 @@ func TestNormalizeMetaPassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.Meta
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.Meta)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -331,8 +331,8 @@ func TestNormalizeParentIDPassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.ParentID
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.ParentID)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -341,8 +341,8 @@ func TestNormalizeTypePassThru(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	before := s.Type
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, before, s.Type)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -351,8 +351,8 @@ func TestNormalizeTypeTooLong(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Type = strings.Repeat("sql", 1000)
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{TypeTruncate: 1}), ts)
 }
 
@@ -360,8 +360,8 @@ func TestNormalizeServiceTag(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Service = "retargeting(api-Staging "
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, "retargeting_api-staging", s.Service)
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -370,8 +370,8 @@ func TestNormalizeEnv(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Meta["env"] = "DEVELOPMENT"
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, "development", s.Meta["env"])
 	assert.Equal(t, newTagStats(), ts)
 }
@@ -384,8 +384,8 @@ func TestSpecialZipkinRootSpan(t *testing.T) {
 	s.SpanID = 42
 	beforeTraceID := s.TraceID
 	beforeSpanID := s.SpanID
-	overridenServiceName := ""
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := ""
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, uint64(0), s.ParentID)
 	assert.Equal(t, beforeTraceID, s.TraceID)
 	assert.Equal(t, beforeSpanID, s.SpanID)
@@ -396,9 +396,9 @@ func TestNormalizeOverrideServiceWhenEmpty(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Service = ""
-	overridenServiceName := "overriden-service-name"
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
-	assert.Equal(t, "overriden-service-name", s.Service)
+	overriddenServiceName := "overridden-service-name"
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
+	assert.Equal(t, "overridden-service-name", s.Service)
 	assert.Equal(t, newTagStats(), ts)
 }
 
@@ -406,16 +406,16 @@ func TestNormalizeRetainServiceWhenNotEmpty(t *testing.T) {
 	ts := newTagStats()
 	s := newTestSpan()
 	s.Service = "service-name"
-	overridenServiceName := "overriden-service-name"
-	assert.NoError(t, normalize(ts, s, overridenServiceName))
+	overriddenServiceName := "overridden-service-name"
+	assert.NoError(t, normalize(ts, s, overriddenServiceName))
 	assert.Equal(t, "service-name", s.Service)
 	assert.Equal(t, newTagStats(), ts)
 }
 
 func TestNormalizeTraceEmpty(t *testing.T) {
 	ts, trace := newTagStats(), pb.Trace{}
-	overridenServiceName := ""
-	err := normalizeTrace(ts, trace, overridenServiceName)
+	overriddenServiceName := ""
+	err := normalizeTrace(ts, trace, overriddenServiceName)
 	assert.Error(t, err)
 	assert.Equal(t, tsDropped(&info.TracesDropped{EmptyTrace: 1}), ts)
 }
@@ -427,8 +427,8 @@ func TestNormalizeTraceTraceIdMismatch(t *testing.T) {
 	span1.TraceID = 1
 	span2.TraceID = 2
 	trace := pb.Trace{span1, span2}
-	overridenServiceName := ""
-	err := normalizeTrace(ts, trace, overridenServiceName)
+	overriddenServiceName := ""
+	err := normalizeTrace(ts, trace, overriddenServiceName)
 	assert.Error(t, err)
 	assert.Equal(t, tsDropped(&info.TracesDropped{ForeignSpan: 1}), ts)
 }
@@ -439,8 +439,8 @@ func TestNormalizeTraceInvalidSpan(t *testing.T) {
 
 	span2.Name = "" // invalid
 	trace := pb.Trace{span1, span2}
-	overridenServiceName := ""
-	err := normalizeTrace(ts, trace, overridenServiceName)
+	overriddenServiceName := ""
+	err := normalizeTrace(ts, trace, overriddenServiceName)
 	assert.NoError(t, err)
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{SpanNameEmpty: 1}), ts)
 }
@@ -451,8 +451,8 @@ func TestNormalizeTraceDuplicateSpanID(t *testing.T) {
 
 	span2.SpanID = span1.SpanID
 	trace := pb.Trace{span1, span2}
-	overridenServiceName := ""
-	err := normalizeTrace(ts, trace, overridenServiceName)
+	overriddenServiceName := ""
+	err := normalizeTrace(ts, trace, overriddenServiceName)
 	assert.NoError(t, err)
 	assert.Equal(t, tsMalformed(&info.SpansMalformed{DuplicateSpanID: 1}), ts)
 }
@@ -463,8 +463,8 @@ func TestNormalizeTrace(t *testing.T) {
 
 	span2.SpanID++
 	trace := pb.Trace{span1, span2}
-	overridenServiceName := ""
-	err := normalizeTrace(ts, trace, overridenServiceName)
+	overriddenServiceName := ""
+	err := normalizeTrace(ts, trace, overriddenServiceName)
 	assert.NoError(t, err)
 }
 
@@ -479,7 +479,7 @@ func TestIsValidStatusCode(t *testing.T) {
 
 func TestNormalizeInvalidUTF8(t *testing.T) {
 	invalidUTF8 := "test\x99\x8f"
-	overridenServiceName := ""
+	overriddenServiceName := ""
 
 	t.Run("service", func(t *testing.T) {
 		assert := assert.New(t)
@@ -489,7 +489,7 @@ func TestNormalizeInvalidUTF8(t *testing.T) {
 
 		span.Service = invalidUTF8
 
-		err := normalize(ts, span, overridenServiceName)
+		err := normalize(ts, span, overriddenServiceName)
 
 		assert.Nil(err)
 		assert.Equal("test", span.Service)
@@ -503,7 +503,7 @@ func TestNormalizeInvalidUTF8(t *testing.T) {
 
 		span.Resource = invalidUTF8
 
-		err := normalize(ts, span, overridenServiceName)
+		err := normalize(ts, span, overriddenServiceName)
 
 		assert.Nil(err)
 		assert.Equal("test��", span.Resource)
@@ -517,7 +517,7 @@ func TestNormalizeInvalidUTF8(t *testing.T) {
 
 		span.Name = invalidUTF8
 
-		err := normalize(ts, span, overridenServiceName)
+		err := normalize(ts, span, overriddenServiceName)
 
 		assert.Nil(err)
 		assert.Equal("test", span.Name)
@@ -531,7 +531,7 @@ func TestNormalizeInvalidUTF8(t *testing.T) {
 
 		span.Type = invalidUTF8
 
-		err := normalize(ts, span, overridenServiceName)
+		err := normalize(ts, span, overriddenServiceName)
 
 		assert.Nil(err)
 		assert.Equal("test��", span.Type)
@@ -548,7 +548,7 @@ func TestNormalizeInvalidUTF8(t *testing.T) {
 			"test2":     invalidUTF8,
 		}
 
-		err := normalize(ts, span, overridenServiceName)
+		err := normalize(ts, span, overriddenServiceName)
 
 		assert.Nil(err)
 		assert.EqualValues(map[string]string{
@@ -561,12 +561,12 @@ func TestNormalizeInvalidUTF8(t *testing.T) {
 func BenchmarkNormalization(b *testing.B) {
 	b.ReportAllocs()
 
-	overridenServiceName := ""
+	overriddenServiceName := ""
 	for i := 0; i < b.N; i++ {
 		ts := newTagStats()
 		span := newTestSpan()
 
-		normalize(ts, span, overridenServiceName)
+		normalize(ts, span, overriddenServiceName)
 	}
 }
 

@@ -411,9 +411,9 @@ func (r *HTTPReceiver) processTraces(ts *info.TagStats, containerID string, trac
 	// Allow propagating the service name set in container tags down to the
 	// spans (root and children), but only if it explicitly specifies the
 	// override is required by using empty service name in the source
-	overridenServiceName := ""
+	overriddenServiceName := ""
 	if svc, ok := containerTags["container.service_name"]; ok {
-		overridenServiceName = svc
+		overriddenServiceName = svc
 	}
 
 	for _, trace := range traces {
@@ -421,7 +421,7 @@ func (r *HTTPReceiver) processTraces(ts *info.TagStats, containerID string, trac
 
 		atomic.AddInt64(&ts.SpansReceived, int64(spans))
 
-		err := normalizeTrace(ts, trace, overridenServiceName)
+		err := normalizeTrace(ts, trace, overriddenServiceName)
 		if err != nil {
 			log.Debug("Dropping invalid trace: %s", err)
 			atomic.AddInt64(&ts.SpansDropped, int64(spans))

@@ -43,7 +43,7 @@ var (
 
 // normalize makes sure a Span is properly initialized and encloses the minimum required info, returning error if it
 // is invalid beyond repair
-func normalize(ts *info.TagStats, s *pb.Span, overridenServiceName string) error {
+func normalize(ts *info.TagStats, s *pb.Span, overriddenServiceName string) error {
 	fallbackServiceName := DefaultServiceName
 	if ts.Lang != "" {
 		fallbackServiceName = fmt.Sprintf("unnamed-%s-service", ts.Lang)
@@ -60,9 +60,9 @@ func normalize(ts *info.TagStats, s *pb.Span, overridenServiceName string) error
 	// Allow overriding the service name (if present) if the source specifies
 	// it empty
 	if s.Service == "" {
-		if overridenServiceName != "" {
-			log.Debugf("Overriding empty service name with span.service=%s: %s", overridenServiceName, s)
-			s.Service = overridenServiceName
+		if overriddenServiceName != "" {
+			log.Debugf("Overriding empty service name with span.service=%s: %s", overriddenServiceName, s)
+			s.Service = overriddenServiceName
 		} else {
 			atomic.AddInt64(&ts.SpansMalformed.ServiceEmpty, 1)
 			log.Debugf("Fixing malformed trace. Service is empty (reason:service_empty), setting span.service=%s: %s", fallbackServiceName, s)
@@ -178,7 +178,7 @@ func normalize(ts *info.TagStats, s *pb.Span, overridenServiceName string) error
 // * return the normalized trace and an error:
 //   - nil if the trace can be accepted
 //   - a reason tag explaining the reason the traces failed normalization
-func normalizeTrace(ts *info.TagStats, t pb.Trace, overridenServiceName string) error {
+func normalizeTrace(ts *info.TagStats, t pb.Trace, overriddenServiceName string) error {
 	if len(t) == 0 {
 		atomic.AddInt64(&ts.TracesDropped.EmptyTrace, 1)
 		return errors.New("trace is empty (reason:empty_trace)")
@@ -192,7 +192,7 @@ func normalizeTrace(ts *info.TagStats, t pb.Trace, overridenServiceName string) 
 			atomic.AddInt64(&ts.TracesDropped.ForeignSpan, 1)
 			return fmt.Errorf("trace has foreign span (reason:foreign_span): %s", span)
 		}
-		if err := normalize(ts, span, overridenServiceName); err != nil {
+		if err := normalize(ts, span, overriddenServiceName); err != nil {
 			return err
 		}
 		if _, ok := spanIDs[span.SpanID]; ok {
